@@ -1,0 +1,10 @@
+database:
+  host: localhost
+  port: 3306
+  name: lockana
+
+jwt:
+  access_token_expire_minutes: 1
+
+logging:
+  filename: lockana.log
