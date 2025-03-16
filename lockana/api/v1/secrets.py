@@ -5,7 +5,7 @@ from lockana.api.v1.auth import oauth2_scheme, verify_token
 from lockana.database.database import get_db
 from lockana.models import Secret
 from lockana.config import SECRET_KEY
-from lockana.crypto import aes_encrypt_data, aes_decrypt_data
+from lockana.crypto import encrypt_data, decrypt_data
 import logging
 
 
@@ -30,7 +30,7 @@ def list_secrets(token: str = Depends(oauth2_scheme), db: Session = Depends(get_
         secrets = db.query(Secret).filter(Secret.username == username).all()
         logger.info(f"User {username} fetched their secrets.")
         decrypted_secrets = [
-            {"name": secret.name, "data": aes_decrypt_data(secret.encrypted_data, SECRET_KEY)}
+            {"name": secret.name, "data": decrypt_data(secret.encrypted_data, SECRET_KEY)}
             for secret in secrets
         ]
         return {"secrets": decrypted_secrets}
@@ -46,7 +46,7 @@ def add_secret(secret: SecretData, token: str = Depends(oauth2_scheme), db: Sess
         if not username:
             raise HTTPException(status_code=401, detail="Invalid token")
 
-        encrypted_data = aes_encrypt_data(secret.encrypted_data, SECRET_KEY)
+        encrypted_data = encrypt_data(secret.encrypted_data, SECRET_KEY)
         new_secret = Secret(username=username, name=secret.name, encrypted_data=encrypted_data)
         db.add(new_secret)
         db.commit()
@@ -73,7 +73,7 @@ def get_secret(secret_name: SecretName, token: str = Depends(oauth2_scheme), db:
             raise HTTPException(status_code=404, detail="Secret not found")
         
         logger.info(f"User {username} accessed their secret: {name}")
-        decrypted_data = aes_decrypt_data(secret.encrypted_data, SECRET_KEY)
+        decrypted_data = decrypt_data(secret.encrypted_data, SECRET_KEY)
         return {"secret": decrypted_data}
 
     except Exception as e:
@@ -93,7 +93,7 @@ def update_secret(secret: SecretData, token: str = Depends(oauth2_scheme), db: S
             logger.warning(f"User {username} tried to update a non-existing secret: {secret.name}")
             raise HTTPException(status_code=404, detail="Secret not found")
         
-        secret_to_update.encrypted_data = aes_encrypt_data(secret.encrypted_data, SECRET_KEY)
+        secret_to_update.encrypted_data = encrypt_data(secret.encrypted_data, SECRET_KEY)
         db.commit()
         logger.info(f"User {username} updated their secret: {secret.name}")
         

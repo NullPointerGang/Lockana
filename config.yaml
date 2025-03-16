@@ -1,10 +1,17 @@
 database:
-  host: localhost
-  port: 3306
-  name: lockana
+  host: localhost  # Адрес хоста базы данных (например, localhost или IP)
+  port: 3306  # Порт для подключения к базе данных MySQL
+  name: lockana  # Имя базы данных
 
 jwt:
-  access_token_expire_minutes: 1
+  access_token_expire_minutes: 1  # Время жизни токена доступа в минутах
+
+encryption:
+  # Возможные алгоритмы шифрования:
+  # aes - Алгоритм AES (симметричное шифрование)
+  # rsa - Алгоритм RSA (асимметричное шифрование)
+  # cha20cha20 - Алгоритм ChaCha20 (современный потоковый шифратор)
+  algorithm: aes  # Выбранный алгоритм шифрования (по умолчанию aes)
 
 logging:
-  filename: lockana.log
+  filename: lockana.log  # Имя файла для логов
