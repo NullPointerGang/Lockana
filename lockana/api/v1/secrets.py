@@ -50,7 +50,7 @@ def add_secret(secret: SecretData, token: str = Depends(oauth2_scheme), db: Sess
         new_secret = Secret(username=username, name=secret.name, encrypted_data=encrypted_data)
         db.add(new_secret)
         db.commit()
-        logger.info(f"User {username} added a new secret: {secret.name}")
+        logger.info(f"User {username} added a new secret")
         
         return {"message": "Secret added successfully", "secret": secret.name}
 
@@ -69,10 +69,10 @@ def get_secret(secret_name: SecretName, token: str = Depends(oauth2_scheme), db:
         secret = db.query(Secret).filter(Secret.username == username, Secret.name == name).first()
         
         if not secret:
-            logger.warning(f"User {username} tried to access a non-existing secret: {name}")
+            logger.warning(f"User {username} tried to access a non-existing secret")
             raise HTTPException(status_code=404, detail="Secret not found")
         
-        logger.info(f"User {username} accessed their secret: {name}")
+        logger.info(f"User {username} accessed their secret")
         decrypted_data = decrypt_data(secret.encrypted_data, SECRET_KEY)
         return {"secret": decrypted_data}
 
@@ -90,12 +90,12 @@ def update_secret(secret: SecretData, token: str = Depends(oauth2_scheme), db: S
         secret_to_update = db.query(Secret).filter(Secret.username == username, Secret.name == secret.name).first()
         
         if not secret_to_update:
-            logger.warning(f"User {username} tried to update a non-existing secret: {secret.name}")
+            logger.warning(f"User {username} tried to update a non-existing secret")
             raise HTTPException(status_code=404, detail="Secret not found")
         
         secret_to_update.encrypted_data = encrypt_data(secret.encrypted_data, SECRET_KEY)
         db.commit()
-        logger.info(f"User {username} updated their secret: {secret.name}")
+        logger.info(f"User {username} updated their secret")
         
         return {"message": "Secret updated successfully", "secret": secret.name}
 
@@ -113,12 +113,12 @@ def delete_secret(secret_name: SecretName, token: str = Depends(oauth2_scheme), 
         secret = db.query(Secret).filter(Secret.username == username, Secret.name == secret_name.name).first()
 
         if not secret:
-            logger.warning(f"User {username} tried to delete a non-existing secret: {secret_name.name}")
+            logger.warning(f"User {username} tried to delete a non-existing secret")
             raise HTTPException(status_code=404, detail="Secret not found")
 
         db.delete(secret)
         db.commit()
-        logger.info(f"User {username} deleted their secret: {secret_name.name}")
+        logger.info(f"User {username} deleted their secret")
         
         return {"message": "Secret deleted successfully"}
 
