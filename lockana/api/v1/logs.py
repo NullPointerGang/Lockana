@@ -41,7 +41,7 @@ def get_logs(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db))
             logs: list[Log] = db.query(Log).all()
             log_list = [
                 {"id": log.id, "username": log.username, "action": log.action, 
-                 "timestamp": log.timestamp, "ip_address": log.ip_address} 
+                 "timestamp": str(log.timestamp), "ip_address": log.ip_address} 
                 for log in logs
             ]
             return JSONResponse({"logs": log_list})
