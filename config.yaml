@@ -13,5 +13,14 @@ encryption:
   # chacha20 - Алгоритм ChaCha20 (современный потоковый шифратор)
   algorithm: aes  # Выбранный алгоритм шифрования (по умолчанию aes)
 
+totp:
+  totp_code_len: 6  # Длина кода TOTP
+  totp_secret_len: 32  # Длина секрета TOTP
+  totp_minimal_secret_len: 16  # Минимальная длина секрета TOTP
+
+auth:
+  max_login_attempts: 5
+  block_duration_minutes: 15
+
 logging:
   filename: lockana.log  # Имя файла для логов

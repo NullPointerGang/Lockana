@@ -17,6 +17,20 @@ router = APIRouter(prefix="/logs", tags=["Logs"])
 
 @router.get("/logs-file")
 def get_logs_file(token: str = Depends(oauth2_scheme)):
+    """
+    Предоставляет файл логов сервера.
+
+    Args:
+        token (str, optional): Токен аутентификации, получаемый через OAuth2.
+
+    Returns:
+        FileResponse: Файл логов в виде бинарных данных.
+        JSONResponse: Ответ с сообщением об ошибке в случае проблем.
+            - 200: Файл логов успешно отправлен.
+            - 401: Ошибка аутентификации.
+            - 404: Файл логов не найден.
+            - 500: Внутренняя ошибка сервера.
+    """
     username: str = verify_token(token, required_role="admin")
     try:
         if username:
@@ -35,6 +49,19 @@ def get_logs_file(token: str = Depends(oauth2_scheme)):
 
 @router.get("/logs")
 def get_logs(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    """
+    Возвращает список логов действий пользователей.
+
+    Args:
+        token (str, optional): Токен аутентификации, получаемый через OAuth2.
+        db (Session, optional): Сессия базы данных.
+
+    Returns:
+        JSONResponse: Ответ с массивом логов или сообщением об ошибке.
+            - 200: Логи успешно получены.
+            - 401: Ошибка аутентификации.
+            - 500: Внутренняя ошибка сервера.
+    """
     username: str = verify_token(token, required_role="admin")
     try:
         if username:
@@ -53,6 +80,19 @@ def get_logs(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db))
 
 @router.delete("logs-file")
 def delete_logs_file(token: str = Depends(oauth2_scheme)):
+    """
+    Удаляет файл логов сервера.
+
+    Args:
+        token (str, optional): Токен аутентификации, получаемый через OAuth2.
+
+    Returns:
+        JSONResponse: Ответ с сообщением о статусе операции.
+            - 200: Лог файл успешно удален.
+            - 401: Ошибка аутентификации.
+            - 404: Файл логов не найден.
+            - 500: Внутренняя ошибка сервера.
+    """
     username: str = verify_token(token, required_role="admin")
     try:
         if username:
@@ -73,6 +113,19 @@ def delete_logs_file(token: str = Depends(oauth2_scheme)):
 
 @router.delete("/logs")
 def delete_logs(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    """
+    Удаляет все записи логов из базы данных.
+
+    Args:
+        token (str, optional): Токен аутентификации, получаемый через OAuth2.
+        db (Session, optional): Сессия базы данных.
+
+    Returns:
+        JSONResponse: Ответ с сообщением о статусе операции.
+            - 200: Логи успешно удалены.
+            - 401: Ошибка аутентификации.
+            - 500: Внутренняя ошибка сервера.
+    """
     username: str = verify_token(token, required_role="admin")
     try:
         if username:

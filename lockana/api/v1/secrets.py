@@ -22,6 +22,21 @@ class SecretName(BaseModel):
 
 @router.get("/list")
 def list_secrets(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    """
+    Возвращает список секретов для аутентифицированного пользователя.
+
+    Args:
+        token (str, optional): Токен аутентификации, получаемый через OAuth2.
+        db (Session, optional): Сессия базы данных.
+
+    Returns:
+        dict: Словарь с ключом "secrets", содержащий список расшифрованных секретов пользователя.
+        
+    Raises:
+        HTTPException: 
+            - 401: Неверный токен.
+            - 500: Внутренняя ошибка сервера.
+    """
     username = verify_token(token)
     try:
         if not username:
@@ -41,6 +56,22 @@ def list_secrets(token: str = Depends(oauth2_scheme), db: Session = Depends(get_
 
 @router.post("/add")
 def add_secret(secret: SecretData, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    """
+    Добавляет новый секрет для аутентифицированного пользователя.
+
+    Args:
+        secret (SecretData): Данные секрета, которые включают имя и зашифрованное содержимое.
+        token (str, optional): Токен аутентификации, получаемый через OAuth2.
+        db (Session, optional): Сессия базы данных.
+
+    Returns:
+        dict: Словарь с сообщением об успешном добавлении секрета и именем секрета.
+        
+    Raises:
+        HTTPException:
+            - 401: Неверный токен.
+            - 500: Внутренняя ошибка сервера.
+    """
     username = verify_token(token)
     try:
         if not username:
@@ -60,6 +91,23 @@ def add_secret(secret: SecretData, token: str = Depends(oauth2_scheme), db: Sess
 
 @router.post("/get")
 def get_secret(secret_name: SecretName, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    """
+    Получает секрет по имени для аутентифицированного пользователя.
+
+    Args:
+        secret_name (SecretName): Объект с именем секрета, который требуется получить.
+        token (str, optional): Токен аутентификации, получаемый через OAuth2.
+        db (Session, optional): Сессия базы данных.
+
+    Returns:
+        dict: Словарь с расшифрованными данными секрета.
+        
+    Raises:
+        HTTPException:
+            - 401: Неверный токен.
+            - 404: Секрет не найден.
+            - 500: Внутренняя ошибка сервера.
+    """
     username = verify_token(token)
     try:
         name = secret_name.name
@@ -82,6 +130,23 @@ def get_secret(secret_name: SecretName, token: str = Depends(oauth2_scheme), db:
 
 @router.put("/update")
 def update_secret(secret: SecretData, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    """
+    Обновляет существующий секрет для аутентифицированного пользователя.
+
+    Args:
+        secret (SecretData): Данные секрета, которые включают имя и зашифрованное содержимое для обновления.
+        token (str, optional): Токен аутентификации, получаемый через OAuth2.
+        db (Session, optional): Сессия базы данных.
+
+    Returns:
+        dict: Словарь с сообщением об успешном обновлении секрета и именем секрета.
+        
+    Raises:
+        HTTPException:
+            - 401: Неверный токен.
+            - 404: Секрет не найден.
+            - 500: Внутренняя ошибка сервера.
+    """
     username = verify_token(token)
     try:
         if not username:
@@ -105,6 +170,23 @@ def update_secret(secret: SecretData, token: str = Depends(oauth2_scheme), db: S
 
 @router.delete("/delete")
 def delete_secret(secret_name: SecretName, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    """
+    Удаляет секрет по имени для аутентифицированного пользователя.
+
+    Args:
+        secret_name (SecretName): Объект с именем секрета, который требуется удалить.
+        token (str, optional): Токен аутентификации, получаемый через OAuth2.
+        db (Session, optional): Сессия базы данных.
+
+    Returns:
+        dict: Словарь с сообщением об успешном удалении секрета.
+
+    Raises:
+        HTTPException:
+            - 401: Неверный токен.
+            - 404: Секрет не найден.
+            - 500: Внутренняя ошибка сервера.
+    """
     username = verify_token(token)
     try:
         if not username:

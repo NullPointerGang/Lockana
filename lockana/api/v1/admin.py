@@ -18,6 +18,20 @@ router = APIRouter(prefix="/admin", tags=["Admin"])
 
 @router.post("/users/create")
 def create_user(user_data: CreateUser, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    """
+    Создает нового пользователя в базе данных.
+
+    Args:
+        user_data (CreateUser): Данные нового пользователя.
+        token (str, optional): Токен аутентификации, получаемый через OAuth2.
+        db (Session, optional): Сессия базы данных.
+
+    Returns:
+        JSONResponse: Ответ с сообщением о статусе операции.
+            - 201: Пользователь успешно создан.
+            - 401: Ошибка аутентификации.
+            - 500: Внутренняя ошибка сервера.
+    """
     username: str = verify_token(token, required_role="admin")
     try:
         if username:
@@ -36,6 +50,21 @@ def create_user(user_data: CreateUser, token: str = Depends(oauth2_scheme), db: 
 
 @router.delete("/users/delete")
 def delete_user(user_data: CreateUser, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    """
+    Удаляет пользователя из базы данных.
+
+    Args:
+        user_data (CreateUser): Данные пользователя для удаления.
+        token (str, optional): Токен аутентификации, получаемый через OAuth2.
+        db (Session, optional): Сессия базы данных.
+
+    Returns:
+        JSONResponse: Ответ с сообщением о статусе операции.
+            - 200: Пользователь успешно удален.
+            - 404: Пользователь не найден.
+            - 401: Ошибка аутентификации.
+            - 500: Внутренняя ошибка сервера.
+    """
     username: str = verify_token(token, required_role="admin")
     try:
         if username:
@@ -55,6 +84,19 @@ def delete_user(user_data: CreateUser, token: str = Depends(oauth2_scheme), db: 
 
 @router.get("/users/list")
 def list_users(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    """
+    Возвращает список всех пользователей в базе данных.
+
+    Args:
+        token (str, optional): Токен аутентификации, получаемый через OAuth2.
+        db (Session, optional): Сессия базы данных.
+
+    Returns:
+        JSONResponse: Ответ с массивом пользователей или сообщением об ошибке.
+            - 200: Список пользователей успешно получен.
+            - 401: Ошибка аутентификации.
+            - 500: Внутренняя ошибка сервера.
+    """
     username: str = verify_token(token, required_role="admin")
     try:
         if username:
