@@ -6,6 +6,7 @@ from lockana.database.database import get_db
 from lockana.models import User, Base
 from lockana.api.v1.auth import oauth2_scheme, verify_token, totp_manager
 from lockana import logging_config  
+from lockana.api.v1.permissions import check_permission
 import logging
 
 class CreateUser(BaseModel):
@@ -17,6 +18,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
 @router.post("/users/create")
+@check_permission("manage")
 def create_user(user_data: CreateUser, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     """
     Создает нового пользователя в базе данных.
@@ -49,6 +51,7 @@ def create_user(user_data: CreateUser, token: str = Depends(oauth2_scheme), db: 
         return JSONResponse({"message": "Internal server error"}, status_code=500)
 
 @router.delete("/users/delete")
+@check_permission("manage")
 def delete_user(user_data: CreateUser, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     """
     Удаляет пользователя из базы данных.
@@ -83,6 +86,7 @@ def delete_user(user_data: CreateUser, token: str = Depends(oauth2_scheme), db: 
         return JSONResponse({"message": "Internal server error"}, status_code=500)
 
 @router.get("/users/list")
+@check_permission("manage")
 def list_users(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     """
     Возвращает список всех пользователей в базе данных.

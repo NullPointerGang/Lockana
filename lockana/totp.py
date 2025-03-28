@@ -88,3 +88,20 @@ class TOTPManger:
         secret_bytes = secrets.token_bytes(self.totp_secret_len)
         secret = base64.b32encode(secret_bytes).decode('utf-8').rstrip('=')
         return secret
+
+    def get_totp_uri(self, secret: str, username: str, issuer: str = "Lockana") -> str:
+        """
+        Генерирует URI для добавления TOTP в аутентификатор
+        
+        Аргументы:
+            secret (str): TOTP секрет
+            username (str): Имя пользователя
+            issuer (str): Название сервиса
+        
+        Возвращает:
+            str: Строка URI для импорта в приложение аутентификации
+        """
+        return pyotp.TOTP(secret).provisioning_uri(
+            name=username,
+            issuer_name=issuer
+        )

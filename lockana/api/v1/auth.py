@@ -162,7 +162,8 @@ def login(request: Request, request_body: UserAuth, db: Session = Depends(get_db
                 redis_client.delete(f"fail_user:{username}")
                 redis_client.delete(f"fail_ip:{client_ip}")
 
-                jwt_token = create_access_token({"sub": username, "role": user.role})
+                primary_role = user.roles[0].name if user.roles else 'user'
+                jwt_token = create_access_token({"sub": username, "role": primary_role})
                 response = {
                     "message": "Login successful",
                     "access_token": jwt_token,

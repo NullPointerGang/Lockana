@@ -2,6 +2,8 @@ from sqlalchemy import Column, String, Integer, DateTime
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from .base import Base
+from .role_permissions import user_roles
+
 
 class User(Base):
     """
@@ -31,5 +33,5 @@ class User(Base):
     totp_secret = Column(String(256), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     secrets = relationship("Secret", back_populates="user")
-    role = Column(String(256), default="user")
+    roles = relationship("Role", secondary=user_roles, back_populates="users")
     telegram_connection = Column(Integer, nullable=False, default=0)

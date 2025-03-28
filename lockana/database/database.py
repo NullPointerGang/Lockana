@@ -32,32 +32,17 @@ class Database:
         get_session: Контекстный менеджер для работы с сессиями базы данных.
         close: Закрывает соединение с базой данных.
     """
-    def __init__(self, username: str, password: str, host: str, port: int, database_name: str, driver: str = "pymysql"):
+    def __init__(self, DATABASE_STRING: str):
         """
         Инициализирует класс для подключения к базе данных и создает все таблицы.
 
         Параметры:
-            username (str): Имя пользователя базы данных.
-            password (str): Пароль пользователя базы данных.
-            host (str): Хост базы данных.
-            port (int): Порт для подключения.
-            database_name (str): Имя базы данных.
-            driver (str): Драйвер для подключения к базе данных (по умолчанию 'pymysql').
-        """
-        self.username = username
-        self.password = password
-        self.host = host
-        self.port = port
-        self.database_name = database_name
-        self.driver = driver
+            DATABASE_STRING (str): Строка подключения к базе данных.
 
-        self.connection_string = (
-            f"mysql+{self.driver}://{self.username}:{self.password}@{self.host}:{self.port}/{self.database_name}"
-            "?charset=utf8mb4"
-        )
+        """
 
         try:
-            self.engine = create_engine(self.connection_string, echo=False, pool_pre_ping=True)
+            self.engine = create_engine(DATABASE_STRING, echo=False, pool_pre_ping=True)
             Base.metadata.create_all(self.engine)
             self.SessionLocal = sessionmaker(bind=self.engine, autocommit=False, autoflush=False)
             logger.info("Подключение к базе данных успешно")
@@ -97,11 +82,7 @@ class Database:
         logger.info("Подключение к базе данных закрыто")
 
 _db_instance = Database(
-    username=DATABASE_USER,
-    password=DATABASE_PASSWORD,
-    database_name=DATABASE_NAME,
-    host=DATABASE_HOST,
-    port=DATABASE_PORT,
+    DATABASE_STRING=DATABASE_STRING
 )
 
 def get_db():

@@ -6,8 +6,8 @@ from lockana.database.database import get_db
 from lockana.models import Secret
 from lockana.config import SECRET_KEY
 from lockana.crypto import encrypt_data, decrypt_data
+from lockana.api.v1.permissions import check_permission
 import logging
-
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +21,7 @@ class SecretName(BaseModel):
     name: str
 
 @router.get("/list")
+@check_permission("read")
 def list_secrets(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     """
     Возвращает список секретов для аутентифицированного пользователя.
@@ -55,6 +56,7 @@ def list_secrets(token: str = Depends(oauth2_scheme), db: Session = Depends(get_
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/add")
+@check_permission("write")
 def add_secret(secret: SecretData, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     """
     Добавляет новый секрет для аутентифицированного пользователя.
@@ -90,6 +92,7 @@ def add_secret(secret: SecretData, token: str = Depends(oauth2_scheme), db: Sess
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/get")
+@check_permission("read")
 def get_secret(secret_name: SecretName, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     """
     Получает секрет по имени для аутентифицированного пользователя.
@@ -129,6 +132,7 @@ def get_secret(secret_name: SecretName, token: str = Depends(oauth2_scheme), db:
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/update")
+@check_permission("write")
 def update_secret(secret: SecretData, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     """
     Обновляет существующий секрет для аутентифицированного пользователя.
@@ -169,6 +173,7 @@ def update_secret(secret: SecretData, token: str = Depends(oauth2_scheme), db: S
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.delete("/delete")
+@check_permission("delete")
 def delete_secret(secret_name: SecretName, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     """
     Удаляет секрет по имени для аутентифицированного пользователя.
