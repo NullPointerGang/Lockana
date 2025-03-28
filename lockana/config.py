@@ -19,12 +19,13 @@ for section in required_sections:
         logging.error(f"Отсутствует секция '{section}' в конфигурации!")
 
 # Переменные из конфигурации
-DATABASE_HOST: str = config["database"].get("host", "localhost")
-DATABASE_PORT: int = config["database"].get("port", 3306)
-DATABASE_NAME: str = config["database"].get("name", "lockana")
-DATABASE_USER = os.getenv("MYSQL_USER", "root")
-DATABASE_PASSWORD = os.getenv("MYSQL_PASSWORD")
+DATABASE_STRING = os.getenv("DATABASE_STRING", "")
+if not DATABASE_STRING:
+    raise ValueError("DATABASE_STRING не может быть пустым!")
+
 SECRET_KEY = os.getenv("SECRET_KEY", "").encode()
+if not SECRET_KEY:
+    raise ValueError("SECRET_KEY не может быть пустым!")
 
 # Настройки JWT
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")

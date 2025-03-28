@@ -6,6 +6,7 @@ from lockana.database.database import get_db
 from lockana.models import Log
 from lockana import logging_config  
 from lockana.config import LOG_FILE_NAME
+from lockana.api.v1.permissions import check_permission
 import logging
 import os
 
@@ -16,6 +17,7 @@ router = APIRouter(prefix="/logs", tags=["Logs"])
 
 
 @router.get("/logs-file")
+@check_permission("logs")
 def get_logs_file(token: str = Depends(oauth2_scheme)):
     """
     Предоставляет файл логов сервера.
@@ -48,6 +50,7 @@ def get_logs_file(token: str = Depends(oauth2_scheme)):
 
 
 @router.get("/logs")
+@check_permission("logs")
 def get_logs(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     """
     Возвращает список логов действий пользователей.
@@ -79,6 +82,7 @@ def get_logs(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db))
         return JSONResponse({"message": "Internal server error"}, status_code=500)
 
 @router.delete("logs-file")
+@check_permission("logs")
 def delete_logs_file(token: str = Depends(oauth2_scheme)):
     """
     Удаляет файл логов сервера.
@@ -112,6 +116,7 @@ def delete_logs_file(token: str = Depends(oauth2_scheme)):
 
 
 @router.delete("/logs")
+@check_permission("logs")
 def delete_logs(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     """
     Удаляет все записи логов из базы данных.

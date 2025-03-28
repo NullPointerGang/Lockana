@@ -1,8 +1,3 @@
-database:
-  host: localhost  # Адрес хоста базы данных (например, localhost или IP)
-  port: 3306  # Порт для подключения к базе данных MySQL
-  name: lockana  # Имя базы данных
-
 jwt:
   access_token_expire_minutes: 1  # Время жизни токена доступа в минутах
 
