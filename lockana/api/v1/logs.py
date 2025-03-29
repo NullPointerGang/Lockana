@@ -17,7 +17,8 @@ router = APIRouter(prefix="/logs", tags=["Logs"])
 
 
 @router.get("/logs-file")
-@check_permission("logs")
+@check_permission("logs-file")
+@check_permission("logs-read")
 def get_logs_file(token: str = Depends(oauth2_scheme)):
     """
     Предоставляет файл логов сервера.
@@ -51,6 +52,7 @@ def get_logs_file(token: str = Depends(oauth2_scheme)):
 
 @router.get("/logs")
 @check_permission("logs")
+@check_permission("logs-read")
 def get_logs(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     """
     Возвращает список логов действий пользователей.
@@ -82,7 +84,8 @@ def get_logs(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db))
         return JSONResponse({"message": "Internal server error"}, status_code=500)
 
 @router.delete("logs-file")
-@check_permission("logs")
+@check_permission("logs-file")
+@check_permission("logs-delete")
 def delete_logs_file(token: str = Depends(oauth2_scheme)):
     """
     Удаляет файл логов сервера.
@@ -117,6 +120,7 @@ def delete_logs_file(token: str = Depends(oauth2_scheme)):
 
 @router.delete("/logs")
 @check_permission("logs")
+@check_permission("logs-delete")
 def delete_logs(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     """
     Удаляет все записи логов из базы данных.

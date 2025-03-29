@@ -142,7 +142,7 @@ def initialize_roles_and_permissions():
             if not session.query(Role).filter_by(name=role_name).first():
                 session.add(Role(name=role_name))
         
-        base_permissions = ["read", "write", "delete", "manage", "logs"]
+        base_permissions = ["read", "write", "delete", "manage", "logs", "logs-file", "logs-read", "logs-delete"]
         for perm_name in base_permissions:
             if not session.query(Permission).filter_by(name=perm_name).first():
                 session.add(Permission(name=perm_name))
@@ -263,25 +263,6 @@ def assign_permissions(role_name: str = None):
         session.commit()
         print(f"✅ Разрешения для роли {role_name} обновлены!")
 
-def main_menu():
-    """Обновленное главное меню"""
-    while True:
-        action = questionary.select(
-            "Выберите действие:",
-            choices=[
-                questionary.Choice("Управление пользователями", value="users"),
-                questionary.Choice("Управление ролями", value="roles"),
-                questionary.Choice("Выход", value="exit"),
-            ]
-        ).ask()
-        
-        if action == "users":
-            manage_users()
-        elif action == "roles":
-            manage_roles()
-        elif action == "exit":
-            break
-
 def delete_user():
     """Удаление пользователя из системы"""
     with _db_instance.get_session() as session:
@@ -310,6 +291,72 @@ def delete_user():
         else:
             print(f"❌ Пользователь {username} не найден!")
 
+def edit_user():
+    """Редактирование существующего пользователя"""
+    with _db_instance.get_session() as session:
+        users = session.query(User).all()
+        if not users:
+            print("В системе нет пользователей для редактирования")
+            return
+
+        username = questionary.select(
+            "Выберите пользователя для редактирования:",
+            choices=[user.username for user in users]
+        ).ask()
+
+        user = session.query(User).filter_by(username=username).first()
+        if not user:
+            print(f"❌ Пользователь {username} не найден!")
+            return
+
+        while True:
+            action = questionary.select(
+                f"Редактирование пользователя {username}:",
+                choices=[
+                    questionary.Choice("Добавить роль", value="add_role"),
+                    questionary.Choice("Удалить роль", value="remove_role"),
+                    questionary.Choice("Сбросить TOTP секрет", value="reset_totp"),
+                    questionary.Choice("Назад", value="back"),
+                ]
+            ).ask()
+
+            if action == "back":
+                break
+            elif action == "add_role":
+                role_name = select_role(session)
+                role = session.query(Role).filter_by(name=role_name).first()
+                
+                if role in user.roles:
+                    print(f"⚠️ Пользователь уже имеет роль {role_name}")
+                    continue
+                    
+                user.roles.append(role)
+                session.commit()
+                print(f"✅ Роль {role_name} добавлена пользователю {username}")
+                
+            elif action == "remove_role":
+                if not user.roles:
+                    print("⚠️ У пользователя нет ролей для удаления")
+                    continue
+                
+                role_to_remove = questionary.select(
+                    "Выберите роль для удаления:",
+                    choices=[r.name for r in user.roles]
+                ).ask()
+                
+                role = session.query(Role).filter_by(name=role_to_remove).first()
+                user.roles.remove(role)
+                session.commit()
+                print(f"✅ Роль {role_to_remove} удалена у пользователя {username}")
+                
+            elif action == "reset_totp":
+                secret, uri = generate_secret_interactive(username)
+                user.totp_secret = secret
+                session.commit()
+                print(f"✅ TOTP секрет для {username} обновлен")
+                if uri:
+                    print(f"Новый URI: {uri}")
+
 def manage_users():
     """Обновлённое меню управления пользователями"""
     while True:
@@ -319,6 +366,7 @@ def manage_users():
                 questionary.Choice("Добавить пользователя", value="add"),
                 questionary.Choice("Список пользователей", value="list"),
                 questionary.Choice("Удалить пользователя", value="delete"),
+                questionary.Choice("Редактировать пользователя", value="edit"),
                 questionary.Choice("Назад", value="back"),
             ]
         ).ask()
@@ -331,6 +379,28 @@ def manage_users():
             list_users()
         elif action == "delete":
             delete_user()
+        elif action == "edit":
+            edit_user()
+
+def main_menu():
+    """Обновленное главное меню"""
+    while True:
+        action = questionary.select(
+            "Выберите действие:",
+            choices=[
+                questionary.Choice("Управление пользователями", value="users"),
+                questionary.Choice("Управление ролями", value="roles"),
+                questionary.Choice("Выход", value="exit"),
+            ]
+        ).ask()
+        
+        if action == "users":
+            manage_users()
+        elif action == "roles":
+            manage_roles()
+        elif action == "exit":
+            break
+
 
 if __name__ == "__main__":
     print("🛡️ Lockana User Management CLI\n")
