@@ -1,17 +1,18 @@
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from lockana.database.database import get_db
-from lockana.models import User, Base
-from lockana.api.v1.auth import oauth2_scheme, verify_token, totp_manager
-from lockana import logging_config  
-from lockana.api.v1.permissions import check_permission
+from lockana.api.v1.auth.jwt import oauth2_scheme, verify_jwt_token
+from lockana.permissions import check_permission
+from .models import CreateUser
+from .service import AdminService
+from lockana.exceptions import (
+    InvalidTokenError,
+    ResourceNotFoundError,
+    PermissionDeniedError,
+    InternalServerError
+)
 import logging
-
-class CreateUser(BaseModel):
-    username: str
-    # telegram_connection: str
 
 logger = logging.getLogger(__name__)
 
@@ -34,21 +35,19 @@ def create_user(user_data: CreateUser, token: str = Depends(oauth2_scheme), db: 
             - 401: Ошибка аутентификации.
             - 500: Внутренняя ошибка сервера.
     """
-    username: str = verify_token(token, required_role="admin")
+    username: str = verify_jwt_token(token, required_role="admin")
     try:
-        if username:
-            # new_user = User(username=user_data.username, telegram_connection=user_data.telegram_connection, totp_secret=totp_manager.create_totp_secret())
-            new_user = User(username=user_data.username, totp_secret=totp_manager.create_totp_secret())
-            db.add(new_user)
-            db.commit()
-            db.refresh(new_user)
-            return JSONResponse({"message": "User created successfully", "user_id": new_user.id}, status_code=201)
-        else:
-            return JSONResponse({"code": 401, "error": "Invalid auth data"}, status_code=401)
-    except Exception as error:
-        logger.error(f"Error creating user: {error}")
-        db.rollback()
-        return JSONResponse({"message": "Internal server error"}, status_code=500)
+        if not username:
+            raise InvalidTokenError("Invalid auth data")
+        
+        service = AdminService(db)
+        user_id = service.create_user(user_data.username)
+        return JSONResponse({"message": "User created successfully", "user_id": user_id}, status_code=201)
+    except InvalidTokenError as e:
+        return JSONResponse({"error": e.detail, "code": e.code}, status_code=e.status_code)
+    except Exception as e:
+        logger.error(f"Error creating user: {e}")
+        raise InternalServerError(detail="Error creating user")
 
 @router.delete("/users/delete")
 @check_permission("manage")
@@ -68,22 +67,21 @@ def delete_user(user_data: CreateUser, token: str = Depends(oauth2_scheme), db: 
             - 401: Ошибка аутентификации.
             - 500: Внутренняя ошибка сервера.
     """
-    username: str = verify_token(token, required_role="admin")
+    username: str = verify_jwt_token(token, required_role="admin")
     try:
-        if username:
-            user_to_delete = db.query(User).filter(User.username == user_data.username).first()
-            if user_to_delete:
-                db.delete(user_to_delete)
-                db.commit()
-                return JSONResponse({"message": "User deleted successfully"}, status_code=200)
-            else:
-                return JSONResponse({"code": 404, "error": "User not found"}, status_code=404)
-        else:
-            return JSONResponse({"code": 401, "error": "Invalid auth data"}, status_code=401)
-    except Exception as error:
-        logger.error(f"Error deleting user: {error}")
-        db.rollback()
-        return JSONResponse({"message": "Internal server error"}, status_code=500)
+        if not username:
+            raise InvalidTokenError("Invalid auth data")
+        
+        service = AdminService(db)
+        service.delete_user(user_data.username)
+        return JSONResponse({"message": "User deleted successfully"}, status_code=200)
+    except InvalidTokenError as e:
+        return JSONResponse({"error": e.detail, "code": e.code}, status_code=e.status_code)
+    except ResourceNotFoundError as e:
+        return JSONResponse({"error": e.detail, "code": e.code}, status_code=e.status_code)
+    except Exception as e:
+        logger.error(f"Error deleting user: {e}")
+        raise InternalServerError(detail="Error deleting user")
 
 @router.get("/users/list")
 @check_permission("manage")
@@ -101,14 +99,16 @@ def list_users(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db
             - 401: Ошибка аутентификации.
             - 500: Внутренняя ошибка сервера.
     """
-    username: str = verify_token(token, required_role="admin")
+    username: str = verify_jwt_token(token, required_role="admin")
     try:
-        if username:
-            users = db.query(User).all()
-            user_list = [{"id": user.id, "username": user.username, "created_at": user.created_at} for user in users]
-            return JSONResponse({"users": user_list}, status_code=200)
-        else:
-            return JSONResponse({"code": 401, "error": "Invalid auth data"}, status_code=401)
-    except Exception as error:
-        logger.error(f"Error listing users: {error}")
-        return JSONResponse({"message": "Internal server error"}, status_code=500)
+        if not username:
+            raise InvalidTokenError("Invalid auth data")
+        
+        service = AdminService(db)
+        users = service.list_users()
+        return JSONResponse({"users": users}, status_code=200)
+    except InvalidTokenError as e:
+        return JSONResponse({"error": e.detail, "code": e.code}, status_code=e.status_code)
+    except Exception as e:
+        logger.error(f"Error listing users: {e}")
+        raise InternalServerError(detail="Error listing users") 

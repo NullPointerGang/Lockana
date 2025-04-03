@@ -1,6 +1,6 @@
 ### **Версия API**: v1
 
-### **Основной роутер**: `/admin`, `/auth`, `/logs`, `/secrets`
+### **Основной роутер**: `/admin`, `/auth`, `/logs`, `/secrets`, `/notifications`
 
 ## **Аутентификация**
 
@@ -19,7 +19,7 @@
 - `username`: (str) Имя пользователя для создания.
 
 **Ответ**:
-- `200 OK`: Пользователь успешно создан.
+- `201 Created`: Пользователь успешно создан.
 - `401 Unauthorized`: Неверные данные авторизации.
 - `500 Internal Server Error`: Внутренняя ошибка сервера.
 
@@ -151,11 +151,11 @@
 
 ---
 
-#### **GET /logs/logs**
-Получает список логов.
+#### **GET /logs/auth-logs**
+Получает список логов аутентификации.
 
 **Ответ**:
-- `200 OK`: Список логов.
+- `200 OK`: Список логов аутентификации.
 
 **Пример**:
 ```json
@@ -174,33 +174,18 @@
 
 ---
 
-#### **DELETE /logs/logs-file**
-Удаляет файл логов.
-
-**Ответ**:
-- `200 OK`: Файл успешно удалён.
-- `401 Unauthorized`: Неверные данные авторизации.
-- `500 Internal Server Error`: Ошибка при удалении файла.
-
-**Пример**:
-```json
-{
-    "message": "Internal server error"
-}
-```
-
----
-
-#### **DELETE /logs**
-Удаляет все логи из базы данных.
+#### **DELETE /logs/auth-logs**
+Удаляет все логи аутентификации из базы данных.
 
 **Ответ**:
 - `200 OK`: Логи успешно удалены.
+- `401 Unauthorized`: Неверные данные авторизации.
+- `500 Internal Server Error`: Ошибка при удалении логов.
 
 **Пример**:
 ```json
 {
-    "message": "Successfully deleted logs from the database"
+    "message": "Successfully deleted auth logs from the database"
 }
 ```
 
@@ -213,6 +198,8 @@
 
 **Ответ**:
 - `200 OK`: Список секретов.
+- `401 Unauthorized`: Неверные данные авторизации.
+- `500 Internal Server Error`: Ошибка на сервере.
 
 **Пример**:
 ```json
@@ -227,7 +214,7 @@
 }
 ```
 
-#### **POST /secrets/create**
+#### **POST /secrets/add**
 Создаёт новый секрет.
 
 **Запрос**:
@@ -236,12 +223,119 @@
 
 **Ответ**:
 - `200 OK`: Секрет успешно создан.
+- `401 Unauthorized`: Неверные данные авторизации.
 - `500 Internal Server Error`: Ошибка на сервере.
 
 **Пример**:
 ```json
 {
-    "message": "Secret created successfully"
+    "message": "Secret added successfully",
+    "secret": "example_secret"
+}
+```
+
+---
+
+#### **POST /secrets/get**
+Получает данные конкретного секрета.
+
+**Запрос**:
+- `name`: (str) Имя секрета.
+
+**Ответ**:
+- `200 OK`: Данные секрета.
+- `401 Unauthorized`: Неверные данные авторизации.
+- `500 Internal Server Error`: Ошибка на сервере.
+
+**Пример**:
+```json
+{
+    "secret": {
+        "name": "example_secret",
+        "encrypted_data": "encrypted_data_here"
+    }
+}
+```
+
+---
+
+#### **PUT /secrets/update**
+Обновляет существующий секрет.
+
+**Запрос**:
+- `name`: (str) Имя секрета.
+- `encrypted_data`: (str) Зашифрованные данные секрета.
+
+**Ответ**:
+- `200 OK`: Секрет успешно обновлен.
+- `401 Unauthorized`: Неверные данные авторизации.
+- `500 Internal Server Error`: Ошибка на сервере.
+
+**Пример**:
+```json
+{
+    "message": "Secret updated successfully",
+    "secret": "example_secret"
+}
+```
+
+---
+
+#### **DELETE /secrets/delete**
+Удаляет секрет.
+
+**Запрос**:
+- `name`: (str) Имя секрета для удаления.
+
+**Ответ**:
+- `200 OK`: Секрет успешно удален.
+- `401 Unauthorized`: Неверные данные авторизации.
+- `500 Internal Server Error`: Ошибка на сервере.
+
+**Пример**:
+```json
+{
+    "message": "Secret deleted successfully"
+}
+```
+
+---
+
+### **/notifications**
+
+#### **POST /notifications/test**
+Отправляет тестовое уведомление пользователю.
+
+**Ответ**:
+- `200 OK`: Тестовое уведомление успешно отправлено.
+- `401 Unauthorized`: Неверные данные авторизации.
+- `500 Internal Server Error`: Ошибка при отправке уведомления.
+
+**Пример**:
+```json
+{
+    "message": "Test notification sent successfully"
+}
+```
+
+---
+
+#### **POST /notifications/connect_telegram**
+Подключает Telegram аккаунт пользователя.
+
+**Запрос**:
+- `telegram_id`: (int) ID пользователя в Telegram.
+- `username`: (str) Имя пользователя в Telegram.
+
+**Ответ**:
+- `200 OK`: Telegram успешно подключен.
+- `401 Unauthorized`: Неверные данные авторизации.
+- `500 Internal Server Error`: Ошибка при подключении Telegram.
+
+**Пример**:
+```json
+{
+    "message": "Telegram connected successfully"
 }
 ```
 

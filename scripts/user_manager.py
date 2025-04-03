@@ -1,11 +1,11 @@
 import questionary
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
-from lockana.totp import TOTPManger
+from lockana.totp import TOTPManager
 from lockana.database.database import _db_instance
 from lockana.models import User, Role, Permission
 
-totp_manager = TOTPManger()
+totp_manager = TOTPManager()
 
 def validate_username(username: str) -> bool:
     """Валидация имени пользователя"""

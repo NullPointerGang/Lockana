@@ -7,7 +7,7 @@ from lockana.models import Base
 
 logger = logging.getLogger(__name__)
 
-def import_models():
+def import_database_models():
     """
     Импортирует все модели из пакета `lockana.models`.
 
@@ -29,7 +29,7 @@ def import_models():
         logger.error(f"Ошибка при импорте моделей: {e}")
         raise
 
-def create_tables():
+def create_database_tables():
     """
     Создает все таблицы в базе данных с использованием SQLAlchemy.
 
@@ -39,7 +39,7 @@ def create_tables():
     Исключения:
         - В случае ошибки при создании таблиц будет вызвано исключение SQLAlchemyError, и ошибка будет зафиксирована в логе.
     """
-    import_models()
+    import_database_models()
     
     try:
         Base.metadata.create_all(_db_instance.engine)

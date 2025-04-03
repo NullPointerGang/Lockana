@@ -2,10 +2,10 @@ import pyotp
 import base64
 import secrets
 from lockana.config import TOTP_CODE_LEN, TOTP_SECRET_LEN, TOTP_MINIMAL_SECRET_LEN
-from lockana.exceptions import TOTPCodeException, TOTPSecretException
+from lockana.exceptions import TOTPCodeError, TOTPSecretError
 
 
-class TOTPManger:
+class TOTPManager:
     """
     Менеджер для работы с TOTP (Time-Based One-Time Password) — временные одноразовые пароли.
 
@@ -45,10 +45,10 @@ class TOTPManger:
             pyotp.TOTP: Объект TOTP, который может быть использован для генерации одноразовых паролей.
 
         Исключения:
-            TOTPSecretException: Если длина секрета меньше минимально допустимой.
+            TOTPSecretError: Если длина секрета меньше минимально допустимой.
         """
         if len(secret) < self.totp_minimal_secret_len:
-            raise TOTPSecretException('Invalid TOTP secret (secret len < required)!') 
+            raise TOTPSecretError('Некорректный секрет TOTP (длина меньше требуемой)!') 
         else:
             return pyotp.TOTP(secret, digits=self.totp_code_len)
 
@@ -64,13 +64,13 @@ class TOTPManger:
             bool: True, если код верен, иначе False.
 
         Исключения:
-            TOTPSecretException: Если длина секрета меньше минимально допустимой.
-            TOTPCodeException: Если длина кода TOTP не соответствует ожидаемой.
+            TOTPSecretError: Если длина секрета меньше минимально допустимой.
+            TOTPCodeError: Если длина кода TOTP не соответствует ожидаемой.
         """
         if len(secret) < self.totp_minimal_secret_len:
-            raise TOTPSecretException('Invalid TOTP secret (secret len < required)!') 
+            raise TOTPSecretError('Некорректный секрет TOTP (длина меньше требуемой)!') 
         if len(totp_code) != self.totp_code_len:
-            raise TOTPCodeException('Invalid TOTP code (code len != required)!')
+            raise TOTPCodeError('Некорректный код TOTP (длина не соответствует требуемой)!')
 
         totp = self.create_totp(secret)
         if totp.verify(totp_code):
@@ -105,3 +105,5 @@ class TOTPManger:
             name=username,
             issuer_name=issuer
         )
+    
+TOTP_MANAGER = TOTPManager()

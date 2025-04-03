@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.exc import SQLAlchemyError
 from lockana.models import Base
-from lockana.exceptions import DatabaseException
+from lockana.exceptions import DatabaseError
 from lockana.config import *
 
 
@@ -48,9 +48,8 @@ class Database:
             logger.info("Подключение к базе данных успешно")
         except SQLAlchemyError as e:
             logger.error(f"Ошибка подключения к базе данных: {e}")
-            raise DatabaseException(f"Ошибка базы данных: {str(e)}")
+            raise DatabaseError(f"Ошибка базы данных: {str(e)}")
 
-    @contextmanager
     def get_session(self) -> Session:
         """
         Контекстный менеджер для работы с сессией базы данных.
@@ -68,7 +67,7 @@ class Database:
         except SQLAlchemyError as e:
             session.rollback()
             logger.error(f"Ошибка базы данных при работе с сессией: {e}")
-            raise DatabaseException(f"Ошибка сессии: {str(e)}")
+            raise DatabaseError(f"Ошибка сессии: {str(e)}")
         finally:
             session.close()
 
