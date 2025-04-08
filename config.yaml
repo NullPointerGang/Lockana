@@ -14,8 +14,89 @@ totp:
   totp_minimal_secret_len: 16  # Минимальная длина секрета TOTP
 
 auth:
-  max_login_attempts: 5
-  block_duration_minutes: 15
+  max_login_attempts: 5  # Максимальное количество неудачных попыток входа перед блокировкой.
+  block_duration_minutes: 15  # Длительность блокировки (в минутах) после превышения лимита попыток входа.
+  whitelist_ips: ['127.0.0.1']  # Список IP-адресов, на которые не распространяется блокировка по количеству неудачных попыток входа.
+
 
 logging:
   filename: lockana.log  # Имя файла для логов
+
+app:
+  port: 8080  # Порт приложения
+  host: 0.0.0.0  # IP-адрес для прослушивания
+  prefix: /api/v1  # Префикс для API
+  cros:
+    enabled: true  # Включение CORS
+    
+    allow_origins: ["*"]  # Список разрешенных доменов
+    allow_methods: [
+      "GET",      # Для получения данных
+      "POST",     # Для создания новых ресурсов
+      "PUT",      # Для обновления существующих ресурсов
+      "DELETE",   # Для удаления ресурсов
+      "PATCH",    # Для частичного обновления
+      "OPTIONS"   # Для CORS preflight запросов
+    ]
+    allow_headers: [
+      "Content-Type",           # Для указания типа контента
+      "Authorization",          # Для JWT токенов
+      "X-Requested-With",       # Для AJAX запросов
+      "Accept",                 # Для указания принимаемых форматов
+      "Origin",                 # Для CORS
+      "Access-Control-Request-Method",  # Для CORS preflight
+      "Access-Control-Request-Headers"  # Для CORS preflight
+    ]
+    allow_credentials: true     # Разрешаем передачу учетных данных
+    max_age: 3600              # Время кэширования preflight запросов в секундах
+
+exceptions:
+  # Конфигурация обработки исключений
+  default_error_code: "INTERNAL_ERROR"
+  default_error_message: "Произошла внутренняя ошибка"
+  error_codes:
+    AUTH_ERROR:
+      message: "Ошибка аутентификации"
+      status_code: 401
+    AUTHZ_ERROR:
+      message: "Ошибка авторизации"
+      status_code: 403
+    VALIDATION_ERROR:
+      message: "Ошибка валидации"
+      status_code: 400
+    DB_ERROR:
+      message: "Ошибка базы данных"
+      status_code: 500
+    TOTP_ERROR:
+      message: "Ошибка TOTP"
+      status_code: 400
+    TOTP_CODE_ERROR:
+      message: "Ошибка кода TOTP"
+      status_code: 400
+    TOTP_SECRET_ERROR:
+      message: "Ошибка секрета TOTP"
+      status_code: 400
+    CRYPTO_ERROR:
+      message: "Ошибка криптографии"
+      status_code: 500
+    NOT_FOUND:
+      message: "Ресурс не найден"
+      status_code: 404
+    BAD_REQUEST:
+      message: "Некорректный запрос"
+      status_code: 400
+    UNAUTHORIZED:
+      message: "Неавторизованный доступ"
+      status_code: 401
+    FORBIDDEN:
+      message: "Доступ запрещен"
+      status_code: 403
+    CONFLICT:
+      message: "Конфликт данных"
+      status_code: 409
+    RATE_LIMIT:
+      message: "Превышен лимит запросов"
+      status_code: 429
+    INTERNAL_SERVER_ERROR:
+      message: "Внутренняя ошибка сервера"
+      status_code: 500
